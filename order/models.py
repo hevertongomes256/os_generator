@@ -19,19 +19,19 @@ class Order(models.Model):
     service_initial = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        verbose_name='Valor Total',
+        verbose_name='Valor de Entrada',
         null=True,
         blank=True
     )
     missing_payment = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        verbose_name='Valor Total',
+        verbose_name='Valor a receber',
         null=True,
         blank=True
     )
     shipping_date = models.DateTimeField(null=True, blank=True)
-    name_withdrawal = models.CharField(verbose_name='Defeito', max_length=255)
+    name_withdrawal = models.CharField(verbose_name='Nome de quem retirou', max_length=255, null=True, blank=True)
     withdrawal_date = models.DateTimeField(null=True, blank=True)
 
 
