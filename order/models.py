@@ -12,7 +12,7 @@ class Order(models.Model):
     additional_description = models.TextField()
     service_autorized = models.BooleanField(default=False)
     service_total = models.DecimalField(
-        max_digits=10,  
+        max_digits=10,
         decimal_places=2,
         verbose_name='Valor Total'
     )
@@ -34,12 +34,21 @@ class Order(models.Model):
     name_withdrawal = models.CharField(verbose_name='Nome de quem retirou', max_length=255, null=True, blank=True)
     withdrawal_date = models.DateTimeField(null=True, blank=True)
 
+    def __str__(self):
+        return f'{self.id}'
+
 
 class Checklist(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='checklist')
+
+    def __str__(self):
+        return f'{self.id}'
 
 
 class ChecklistItem(models.Model):
     checklist = models.ForeignKey(Checklist, on_delete=models.CASCADE, related_name='items')
     description = models.CharField(max_length=255)
     checked = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.id}'
