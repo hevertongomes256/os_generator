@@ -1,0 +1,47 @@
+<!-- orders/order_list.html -->
+{% extends 'base.html' %}
+{% block content %}
+<h2>Minhas Ordens de Serviços</h2>
+<div class="d-flex justify-content-end mb-3">
+    <a href="" class="btn btn-success">
+        <i class="fas fa-plus"></i> Nova Ordem
+    </a>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Aparelho</th>
+            <th>Defeito</th>
+            <th>Serviço autorizado</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in object_list %}
+        <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.client }}</td>
+            <td>{{ order.device }}</td>
+            <td>{{ order.defect }}</td>
+            <td>{{ order.service_autorized|yesno:"✔️,❌" }}</td>
+            <td>
+                <a href="https://google.com" class="btn btn-sm btn-primary" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <form action="https>  ://google.com" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" title="Excluir" onclick="return confirm('Confirma exclusão?');">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </form>
+                <a href="https://google.com" class="btn btn-sm btn-secondary" title="Emitir PDF" target="_blank">
+                    <i class="fas fa-file-pdf"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
