@@ -4,13 +4,13 @@ from person.models import Person
 
 class Order(models.Model):
 
-    client = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='person_order')
+    client = models.ForeignKey(Person, verbose_name='Cliente', on_delete=models.CASCADE, related_name='person_order')
     device = models.CharField(verbose_name='Aparelho', max_length=255)
     defect = models.CharField(verbose_name='Defeito', max_length=255)
-    additional_info = models.TextField(null=True, blank=True)
+    additional_info = models.TextField(verbose_name='Observações', null=True, blank=True)
     additional_info_exit = models.TextField(null=True, blank=True)
-    additional_description = models.TextField()
-    service_autorized = models.BooleanField(default=False)
+    additional_description = models.TextField(verbose_name='Serviço Prestado')
+    service_autorized = models.BooleanField(verbose_name='Serviço Autorizado', default=False)
     service_total = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -30,7 +30,7 @@ class Order(models.Model):
         null=True,
         blank=True
     )
-    shipping_date = models.DateTimeField(null=True, blank=True)
+    shipping_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     name_withdrawal = models.CharField(verbose_name='Nome de quem retirou', max_length=255, null=True, blank=True)
     withdrawal_date = models.DateTimeField(null=True, blank=True)
 
