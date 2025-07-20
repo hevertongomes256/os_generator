@@ -33,6 +33,7 @@
                     <tbody>
                     {% for form in formset %}
                         <tr>
+                            {{ form.id }}
                             <td>
                                 {{ form.description|add_class:'form-control' }}
                                 {% for error in form.description.errors %}

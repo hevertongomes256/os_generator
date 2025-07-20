@@ -27,7 +27,7 @@
             <td>{{ order.defect }}</td>
             <td>{{ order.service_autorized|yesno:"✔️,❌" }}</td>
             <td>
-                <a href="https://google.com" class="btn btn-sm btn-primary" title="Editar">
+                <a href="{% url 'order-edit' order.id %}" class="btn btn-sm btn-primary" title="Editar">
                     <i class="fas fa-edit"></i>
                 </a>
                 <form action="https>  ://google.com" method="post" style="display: inline;">
