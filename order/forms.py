@@ -23,3 +23,23 @@ ChecklistItemFormSet = inlineformset_factory(
     extra=len(initial_data_checklist),
     can_delete=False
 )
+
+
+class OrderEditForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['client', 'device', 'defect', 'additional_info', 'additional_description', 'service_total',
+                  'service_initial', 'missing_payment', 'service_autorized', 'name_withdrawal', 'withdrawal_date']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['client'].queryset = Person.objects.filter(person_type=2)
+
+
+ChecklistItemFormSetEdit = inlineformset_factory(
+    Checklist,
+    ChecklistItem,
+    fields=['description', 'checked'],
+    extra=0,
+    can_delete=False
+)

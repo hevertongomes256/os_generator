@@ -30,9 +30,9 @@ class Order(models.Model):
         null=True,
         blank=True
     )
-    shipping_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    shipping_date = models.DateTimeField(verbose_name='Data de recebimento', auto_now_add=True, null=True, blank=True)
     name_withdrawal = models.CharField(verbose_name='Nome de quem retirou', max_length=255, null=True, blank=True)
-    withdrawal_date = models.DateTimeField(null=True, blank=True)
+    withdrawal_date = models.DateTimeField(verbose_name='Data de retirada', null=True, blank=True)
 
     def __str__(self):
         return f'{self.id}'

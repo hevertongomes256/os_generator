@@ -1,8 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Order, Checklist
-from .forms import OrderForm, ChecklistItemFormSet
+from .forms import OrderForm, ChecklistItemFormSet, ChecklistItemFormSetEdit,  OrderEditForm
 from .tools import initial_data_checklist
 
 
@@ -35,3 +35,30 @@ def order_create(request):
         'order_form': order_form,
         'formset': formset,
     })
+
+
+def order_edit(request, pk):
+
+    try:
+        order = get_object_or_404(Order, pk=pk)
+        checklist, created = Checklist.objects.get_or_create(order=order)
+
+        if request.method == 'POST':
+            order_form = OrderEditForm(request.POST, instance=order)
+            formset = ChecklistItemFormSetEdit(request.POST, instance=checklist)
+            if order_form.is_valid() and formset.is_valid():
+                order_form.save()
+                formset.save()
+                return redirect('orders-list')
+        else:
+            order_form = OrderEditForm(instance=order)
+            formset = ChecklistItemFormSetEdit(instance=checklist)
+
+        return render(request, 'orders/order_form.html', {
+            'order_form': order_form,
+            'formset': formset,
+            'object': order,
+        })
+    except Exception as err:
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
