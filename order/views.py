@@ -1,6 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
+from django.views.generic.edit import DeleteView
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
 from .models import Order, Checklist
 from .forms import OrderForm, ChecklistItemFormSet, ChecklistItemFormSetEdit,  OrderEditForm
 from .tools import initial_data_checklist
@@ -62,3 +64,9 @@ def order_edit(request, pk):
     except Exception as err:
         print(f"Unexpected {err=}, {type(err)=}")
         raise
+
+
+class OrderDeleteView(DeleteView):
+    model = Order
+    template_name = 'orders/order_confirm_delete.html'
+    success_url = reverse_lazy('orders-list')
