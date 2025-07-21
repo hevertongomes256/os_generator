@@ -14,3 +14,15 @@ class PersonAdminForm(forms.ModelForm):
         if person_type == 'logista' and not password:
             raise forms.ValidationError("Logista precisa de senha.")
         return cleaned_data
+
+
+class PersonForm(forms.ModelForm):
+    model = Person
+    fields = ['first_name', 'last_name', 'email', 'phone']
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.person_type = 2
+        if commit:
+            instance.save()
+        return instance
