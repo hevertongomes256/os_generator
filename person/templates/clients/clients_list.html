@@ -3,7 +3,7 @@
 {% block content %}
 <h2>Meus Clientes</h2>
 <div class="d-flex justify-content-end mb-3">
-    <a href="" class="btn btn-success">
+    <a href="{% url 'client-create' %}" class="btn btn-success">
         <i class="fas fa-plus"></i> Nova Cliente
     </a>
 </div>
@@ -21,19 +21,16 @@
         {% for client in object_list %}
         <tr>
             <td>{{ client.id }}</td>
-            <td>{{ client.fist_name }} {{ client.last_name }}</td>
+            <td>{{ client.first_name }} {{ client.last_name }}</td>
             <td>{{ client.email }}</td>
             <td>{{ client.phone }}</td>
             <td>
-                <a href="" class="btn btn-sm btn-primary" title="Editar">
+                <a href="{%  url 'client-edit' client.id %}" class="btn btn-sm btn-primary" title="Editar">
                     <i class="fas fa-edit"></i>
                 </a>
-                <form action="" method="post" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger" title="Excluir" onclick="return confirm('Confirma exclusão?');">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </form>
+                <a href="{% url 'client-delete' client.id %}" class="btn btn-sm btn-danger" title="Excluir">
+                    <i class="fas fa-trash-alt"></i>
+                </a>
             </td>
         </tr>
         {% endfor %}
