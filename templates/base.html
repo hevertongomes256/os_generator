@@ -18,6 +18,8 @@
                     <li class="nav-item">
                         <span class="navbar-text mr-2">Olá, {{ user.username }}</span>
                     </li>
+                    <a href="{% url 'clients-list' %}" class="btn btn-primary">Clientes</a>
+                    <a href="{% url 'orders-list' %}" class="btn btn-primary">Ordens</a>
                     <form action="{% url 'logout' %}" method="post" style="display:inline;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger">Sair</button>
