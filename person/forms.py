@@ -17,8 +17,9 @@ class PersonAdminForm(forms.ModelForm):
 
 
 class PersonForm(forms.ModelForm):
-    model = Person
-    fields = ['first_name', 'last_name', 'email', 'phone']
+    class Meta:
+        model = Person
+        fields = ['first_name', 'last_name', 'email', 'phone']
 
     def save(self, commit=True):
         instance = super().save(commit=False)

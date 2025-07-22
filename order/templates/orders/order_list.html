@@ -30,12 +30,9 @@
                 <a href="{% url 'order-edit' order.id %}" class="btn btn-sm btn-primary" title="Editar">
                     <i class="fas fa-edit"></i>
                 </a>
-                <form action="{% url 'order-delete' order.id %}" method="post" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger" title="Excluir" onclick="return confirm('Confirma exclusão?');">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </form>
+                 <a href="{% url 'order-delete' order.id %}" class="btn btn-sm btn-danger" title="Excluir">
+                    <i class="fas fa-trash-alt"></i>
+                </a>
                 <a href="https://google.com" class="btn btn-sm btn-secondary" title="Emitir PDF" target="_blank">
                     <i class="fas fa-file-pdf"></i>
                 </a>
