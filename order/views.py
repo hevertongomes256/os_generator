@@ -14,14 +14,17 @@ class OrderListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         # Para exibir apenas as orders do logista logado
-        return Order.objects.all()
+        return Order.objects.filter(created_by=self.request.user)
 
 
 def order_create(request):
     if request.method == 'POST':
-        order_form = OrderForm(request.POST)
+        order_form = OrderForm(commit=False, user=request.user)
+
         if order_form.is_valid():
-            order = order_form.save()
+            order = order_form.save(commit=False)
+            order.created_by = request.user
+            order.save()
             checklist = Checklist.objects.create(order=order)
             formset = ChecklistItemFormSet(request.POST, instance=checklist)
             if formset.is_valid():
