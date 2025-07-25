@@ -1,11 +1,12 @@
 from django import forms
 from .models import Person
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 
-class PersonAdminForm(forms.ModelForm):
+class PersonCreateForm(UserCreationForm):
     class Meta:
         model = Person
-        fields = ['username', 'first_name', 'last_name', 'email', 'person_type', 'phone']
+        fields = ['username', 'email', 'first_name', 'last_name', 'person_type']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -14,6 +15,12 @@ class PersonAdminForm(forms.ModelForm):
         if person_type == 'logista' and not password:
             raise forms.ValidationError("Logista precisa de senha.")
         return cleaned_data
+
+
+class PersonChangeForm(UserChangeForm):
+    class Meta:
+        model = Person
+        fields = ['username', 'email', 'first_name', 'last_name', 'person_type']
 
 
 class PersonForm(forms.ModelForm):

@@ -19,7 +19,7 @@ class OrderListView(LoginRequiredMixin, ListView):
 
 def order_create(request):
     if request.method == 'POST':
-        order_form = OrderForm(commit=False, user=request.user)
+        order_form = OrderForm(request.POST, user=request.user)
 
         if order_form.is_valid():
             order = order_form.save(commit=False)
@@ -33,7 +33,7 @@ def order_create(request):
         else:
             formset = ChecklistItemFormSet(request.POST)
     else:
-        order_form = OrderForm()
+        order_form = OrderForm(user=request.user)
         checklist = Checklist()
         formset = ChecklistItemFormSet(instance=checklist, initial=initial_data_checklist)
     return render(request, 'orders/order_form.html', {
@@ -49,14 +49,14 @@ def order_edit(request, pk):
         checklist, created = Checklist.objects.get_or_create(order=order)
 
         if request.method == 'POST':
-            order_form = OrderEditForm(request.POST, instance=order)
+            order_form = OrderEditForm(request.POST, instance=order, user=request.user)
             formset = ChecklistItemFormSetEdit(request.POST, instance=checklist)
             if order_form.is_valid() and formset.is_valid():
                 order_form.save()
                 formset.save()
                 return redirect('orders-list')
         else:
-            order_form = OrderEditForm(instance=order)
+            order_form = OrderEditForm(instance=order, user=request.user)
             formset = ChecklistItemFormSetEdit(instance=checklist)
 
         return render(request, 'orders/order_form.html', {
