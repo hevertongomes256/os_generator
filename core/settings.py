@@ -128,3 +128,7 @@ AUTH_USER_MODEL = 'person.Person'
 
 LOGIN_REDIRECT_URL = '/orders/'
 LOGOUT_REDIRECT_URL = 'login'
+
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [BASE_DIR / "static", ]

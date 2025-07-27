@@ -2,10 +2,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.views.generic.edit import DeleteView
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseBadRequest
 from django.urls import reverse_lazy
 from .models import Order, Checklist
 from .forms import OrderForm, ChecklistItemFormSet, ChecklistItemFormSetEdit,  OrderEditForm
 from .tools import initial_data_checklist
+from .pdfreport import generate_pdf_entry, generate_pdf_exit
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -73,3 +75,16 @@ class OrderDeleteView(DeleteView):
     model = Order
     template_name = 'orders/order_confirm_delete.html'
     success_url = reverse_lazy('orders-list')
+
+
+def generate_pdf_os(request, order_id):
+    tipo = request.GET.get('type')
+    order = get_object_or_404(Order, id=order_id)
+    checklist = order.checklist
+
+    if tipo == 'entrada':
+        return generate_pdf_entry(order, checklist)
+    elif tipo == 'saida':
+        return generate_pdf_exit(order, checklist)
+    else:
+        return HttpResponseBadRequest("Tipo não informado ou inválido.")
