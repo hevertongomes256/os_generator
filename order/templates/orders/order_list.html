@@ -1,6 +1,7 @@
 <!-- orders/order_list.html -->
 {% extends 'base.html' %}
 {% block content %}
+{% load static %}
 <h2>Minhas Ordens de Serviços</h2>
 <div class="d-flex justify-content-end mb-3">
     <a href="{% url 'order-create' %}" class="btn btn-success">
@@ -33,12 +34,43 @@
                  <a href="{% url 'order-delete' order.id %}" class="btn btn-sm btn-danger" title="Excluir">
                     <i class="fas fa-trash-alt"></i>
                 </a>
-                <a href="https://google.com" class="btn btn-sm btn-secondary" title="Emitir PDF" target="_blank">
-                    <i class="fas fa-file-pdf"></i>
+                <a href="javascript:void(0);" class="link-acao btn btn-sm btn-outline-warning" title="Gerar PDF" onclick="openModal({{ order.id }})">
+                    <i class="fas fa-file-pdf"></i> Gerar PDF
                 </a>
             </td>
         </tr>
         {% endfor %}
+
     </tbody>
 </table>
+<!-- Modal -->
+<div class="modal fade" id="osTypeModal" tabindex="-1" aria-labelledby="osTypeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm"> <!-- modal-sm deixa pequeno e centralizado -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="osTypeModalLabel">Escolha o tipo da O.S.</h5>
+        <button type="button" class="btn-close" onclick="closeModal()" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="osTypeForm">
+          <input type="hidden" id="modalOrderId">
+          <label>
+            <input type="radio" name="tipo" value="entrada" checked> Entrada
+          </label>
+          <label>
+            <input type="radio" name="tipo" value="saida"> Saída
+          </label>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button id="btnDownloadPDF" type="button" class="btn btn-success" onclick="baixarPDF()">Gerar PDF</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal()" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
+
+
+<script src="{% static 'scripts/generate_pdf.js' %}"></script>
