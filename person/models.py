@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 from django.db import models
 
 
@@ -12,9 +13,16 @@ class Person(AbstractUser):
     )
     person_type = models.PositiveSmallIntegerField(choices=PERSON_TYPE_CHOICES, default=STORE_OWNER)
     phone = models.CharField(max_length=20, blank=True, null=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='users_created'
+    )
 
     def __str__(self):
-        return f'{self.username}'
+        return f'{self.first_name} {self.last_name}'
 
 
 class Address(models.Model):

@@ -12,14 +12,16 @@ class PersonListView(LoginRequiredMixin, ListView):
     template_name = 'clients/clients_list.html'
 
     def get_queryset(self):
-        return Person.objects.filter(person_type=2)
+        return Person.objects.filter(person_type=2, owner=self.request.user)
 
 
 def client_create(request):
     if request.method == 'POST':
         client_form = PersonForm(request.POST)
         if client_form.is_valid():
-            client_form.save()
+            client = client_form.save(commit=False)
+            client.owner = request.user
+            client.save()
             return redirect('clients-list')
     else:
         client_form = PersonForm()

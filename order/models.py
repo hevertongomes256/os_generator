@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from person.models import Person
 
@@ -33,6 +34,7 @@ class Order(models.Model):
     shipping_date = models.DateTimeField(verbose_name='Data de recebimento', auto_now_add=True, null=True, blank=True)
     name_withdrawal = models.CharField(verbose_name='Nome de quem retirou', max_length=255, null=True, blank=True)
     withdrawal_date = models.DateTimeField(verbose_name='Data de retirada', null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
 
     def __str__(self):
         return f'{self.id}'

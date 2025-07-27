@@ -12,8 +12,10 @@ class OrderForm(forms.ModelForm):
                   'service_initial', 'missing_payment', 'service_autorized']
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        self.fields['client'].queryset = Person.objects.filter(person_type=2)
+        if user:
+            self.fields['client'].queryset = Person.objects.filter(owner=user, person_type=2)
 
 
 ChecklistItemFormSet = inlineformset_factory(
@@ -32,8 +34,10 @@ class OrderEditForm(forms.ModelForm):
                   'service_initial', 'missing_payment', 'service_autorized', 'name_withdrawal', 'withdrawal_date']
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        self.fields['client'].queryset = Person.objects.filter(person_type=2)
+        if user:
+            self.fields['client'].queryset = Person.objects.filter(owner=user, person_type=2)
 
 
 ChecklistItemFormSetEdit = inlineformset_factory(
