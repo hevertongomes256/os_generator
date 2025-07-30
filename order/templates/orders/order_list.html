@@ -1,76 +1,530 @@
-<!-- orders/order_list.html -->
 {% extends 'base.html' %}
-{% block content %}
 {% load static %}
-<h2>Minhas Ordens de Serviços</h2>
-<div class="d-flex justify-content-end mb-3">
-    <a href="{% url 'order-create' %}" class="btn btn-success">
-        <i class="fas fa-plus"></i> Nova Ordem
-    </a>
-</div>
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Cliente</th>
-            <th>Aparelho</th>
-            <th>Defeito</th>
-            <th>Serviço autorizado</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for order in object_list %}
-        <tr>
-            <td>{{ order.id }}</td>
-            <td>{{ order.client }}</td>
-            <td>{{ order.device }}</td>
-            <td>{{ order.defect }}</td>
-            <td>{{ order.service_autorized|yesno:"✔️,❌" }}</td>
-            <td>
-                <a href="{% url 'order-edit' order.id %}" class="btn btn-sm btn-primary" title="Editar">
-                    <i class="fas fa-edit"></i>
-                </a>
-                 <a href="{% url 'order-delete' order.id %}" class="btn btn-sm btn-danger" title="Excluir">
-                    <i class="fas fa-trash-alt"></i>
-                </a>
-                <a href="javascript:void(0);" class="link-acao btn btn-sm btn-outline-warning" title="Gerar PDF" onclick="openModal({{ order.id }})">
-                    <i class="fas fa-file-pdf"></i> Gerar PDF
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
 
-    </tbody>
-</table>
-<!-- Modal -->
-<div class="modal fade" id="osTypeModal" tabindex="-1" aria-labelledby="osTypeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm"> <!-- modal-sm deixa pequeno e centralizado -->
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="osTypeModalLabel">Escolha o tipo da O.S.</h5>
-        <button type="button" class="btn-close" onclick="closeModal()" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="osTypeForm">
-          <input type="hidden" id="modalOrderId">
-          <label>
-            <input type="radio" name="tipo" value="entrada" checked> Entrada
-          </label>
-          <label>
-            <input type="radio" name="tipo" value="saida"> Saída
-          </label>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button id="btnDownloadPDF" type="button" class="btn btn-success" onclick="baixarPDF()">Gerar PDF</button>
-        <button type="button" class="btn btn-secondary" onclick="closeModal()" data-bs-dismiss="modal">Cancelar</button>
-      </div>
+{% block title %}Dashboard - Ordens de Serviço{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- Header da página -->
+    <div class="page-header">
+        <div class="page-title">
+            <h1>Dashboard</h1>
+            <p class="text-muted">Visão geral das suas ordens de serviço</p>
+        </div>
+        <div class="page-actions">
+            <a href="{% url 'order-create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>
+                Nova Ordem
+            </a>
+        </div>
     </div>
-  </div>
+
+    <!-- Cards de Métricas -->
+    <div class="metrics-grid">
+        <div class="metric-card earned">
+            <div class="metric-content">
+                <div class="metric-info">
+                    <h3>R$ {{ total_earned|floatformat:2 }}</h3>
+                    <p>Total Ganho</p>
+                    <small>{{ completed_orders }} ordens concluídas</small>
+                </div>
+                <div class="metric-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-card pending">
+            <div class="metric-content">
+                <div class="metric-info">
+                    <h3>R$ {{ total_pending|floatformat:2 }}</h3>
+                    <p>A Receber</p>
+                    <small>{{ authorized_orders }} ordens autorizadas</small>
+                </div>
+                <div class="metric-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} <div class="metric-card progress">
+            <div class="metric-content">
+                <div class="metric-info">
+                    <h3>R$ {{ total_in_progress|floatformat:2 }}</h3>
+                    <p>Em Andamento</p>
+                    <small>{{ pending_orders }} ordens pendentes</small>
+                </div>
+                <div class="metric-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+            </div>
+        </div> {% endcomment %}
+
+        <div class="metric-card average">
+            <div class="metric-content">
+                <div class="metric-info">
+                    <h3>R$ {{ avg_order_value|floatformat:2 }}</h3>
+                    <p>Ticket Médio</p>
+                    <small>{{ total_orders }} ordens no total</small>
+                </div>
+                <div class="metric-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h4>Ordens por Mês</h4>
+                <p class="text-muted">Evolução mensal das ordens criadas</p>
+            </div>
+            <div class="chart-body">
+                <canvas id="ordersChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-header">
+                <h4>Faturamento Mensal</h4>
+                <p class="text-muted">Receita gerada por mês</p>
+            </div>
+            <div class="chart-body">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+        <div class="filters-header">
+            <h4>Filtrar Ordens</h4>
+            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+                <i class="fas fa-filter me-2"></i>Filtros
+            </button>
+        </div>
+        
+        <div class="collapse show" id="filtersCollapse">
+            <form method="get" class="filters-form">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">{{ filter_form.search.label }}</label>
+                        {{ filter_form.search }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">{{ filter_form.client.label }}</label>
+                        {{ filter_form.client }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">{{ filter_form.period.label }}</label>
+                        {{ filter_form.period }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">{{ filter_form.status.label }}</label>
+                        {{ filter_form.status }}
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">{{ filter_form.min_value.label }}</label>
+                        {{ filter_form.min_value }}
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">{{ filter_form.max_value.label }}</label>
+                        {{ filter_form.max_value }}
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="filter-actions mt-3">
+                    <a href="{% url 'orders-list' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-times me-2"></i>Limpar Filtros
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Ordens -->
+    <div class="orders-section">
+        <div class="orders-header">
+            <h4>Ordens de Serviço</h4>
+            <div class="orders-info">
+                <span class="badge bg-secondary">{{ orders|length }} resultado{{ orders|length|pluralize:'s' }}</span>
+            </div>
+        </div>
+        
+        <div class="orders-table">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>OS</th>
+                            <th>Cliente</th>
+                            <th>Aparelho</th>
+                            <th>Defeito</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>
+                                <strong>#{{ order.id }}</strong>
+                            </td>
+                            <td>
+                                <div class="client-info">
+                                    <strong>{{ order.client.name }}</strong>
+                                    {% if order.client.phone %}
+                                        <small class="d-block text-muted">{{ order.client.phone }}</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ order.device }}</td>
+                            <td>
+                                <span class="defect-text" title="{{ order.defect }}">
+                                    {{ order.defect|truncatechars:30 }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong class="value-text">R$ {{ order.service_total|floatformat:2 }}</strong>
+                            </td>
+                            <td>
+                                <span class="status-badge {{ order.status_class }}">
+                                    {{ order.status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ order.shipping_date|date:"d/m/Y" }}
+                                </small>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'order-edit' order.id %}" 
+                                       class="btn btn-outline-primary btn-sm" 
+                                       title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-outline-danger btn-sm" 
+                                            onclick="openModal({{ order.id }})"
+                                            title="Gerar PDF">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <a href="{% url 'order-delete' order.id %}" 
+                                       class="btn btn-outline-danger btn-sm" 
+                                       title="Excluir"
+                                       onclick="return confirm('Tem certeza que deseja excluir esta ordem?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="empty-state">
+                                    <i class="fas fa-clipboard-list text-muted mb-3" style="font-size: 3rem;"></i>
+                                    <h5 class="text-muted">Nenhuma ordem encontrada</h5>
+                                    <p class="text-muted mb-3">
+                                        {% if request.GET %}
+                                            Nenhuma ordem corresponde aos filtros aplicados.
+                                        {% else %}
+                                            Você ainda não criou nenhuma ordem de serviço.
+                                        {% endif %}
+                                    </p>
+                                    {% if not request.GET %}
+                                    <a href="{% url 'order-create' %}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Criar primeira ordem
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Paginação -->
+        {% if is_paginated %}
+        <div class="pagination-section">
+            <div class="pagination-info">
+                <p class="text-muted">
+                    Exibindo {{ page_obj.start_index }} a {{ page_obj.end_index }} 
+                    de {{ page_obj.paginator.count }} resultado{{ page_obj.paginator.count|pluralize:'s' }}
+                </p>
+            </div>
+            
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page=1" aria-label="Primeira">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Próxima">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.paginator.num_pages }}" aria-label="Última">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
 </div>
 
+<!-- Modal para geração de PDF -->
+<div class="modal fade" id="osTypeModal" tabindex="-1" aria-labelledby="osTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="osTypeModalLabel">Escolha o tipo da O.S.</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="osTypeForm">
+                    <input type="hidden" id="modalOrderId">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipo" id="tipoEntrada" value="entrada" checked>
+                            <label class="form-check-label" for="tipoEntrada">
+                                <i class="fas fa-download me-2 text-primary"></i>
+                                <strong>Entrada</strong>
+                                <small class="d-block text-muted">Ordem de recebimento do aparelho</small>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tipo" id="tipoSaida" value="saida">
+                            <label class="form-check-label" for="tipoSaida">
+                                <i class="fas fa-upload me-2 text-success"></i>
+                                <strong>Saída</strong>
+                                <small class="d-block text-muted">Ordem de entrega do aparelho</small>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="baixarPDF()">
+                    <i class="fas fa-file-pdf me-2"></i>Gerar PDF
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Dados para os gráficos vindos do contexto Django
+    window.chartData = {
+        months: {{ chart_data.months|safe }},
+        order_counts: {{ chart_data.order_counts|safe }},
+        order_values: {{ chart_data.order_values|safe }},
+        completed_counts: {{ chart_data.completed_counts|safe }}
+    };
 
-<script src="{% static 'scripts/generate_pdf.js' %}"></script>
+    // Inicialização dos gráficos após o DOM carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeCharts();
+    });
+
+    function initializeCharts() {
+        // Verificar se Chart.js está carregado
+        if (typeof Chart === 'undefined') {
+            console.warn('Chart.js não está carregado');
+            return;
+        }
+
+        // Configurações globais do Chart.js
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#6b7280';
+
+        // Gráfico de Ordens por Mês
+        const ordersCanvas = document.getElementById('ordersChart');
+        if (ordersCanvas && window.chartData) {
+            const ctx = ordersCanvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: window.chartData.months,
+                    datasets: [{
+                        label: 'Ordens Criadas',
+                        data: window.chartData.order_counts,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 6
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f3f4f6'
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    return Math.floor(value) === value ? value : '';
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // Gráfico de Faturamento Mensal
+        const revenueCanvas = document.getElementById('revenueChart');
+        if (revenueCanvas && window.chartData) {
+            const ctx = revenueCanvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: window.chartData.months,
+                    datasets: [{
+                        label: 'Faturamento (R$)',
+                        data: window.chartData.order_values,
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: '#10b981',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#10b981',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'R$ ' + context.parsed.y.toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 6
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f3f4f6'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}

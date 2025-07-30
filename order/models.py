@@ -36,8 +36,19 @@ class Order(models.Model):
     withdrawal_date = models.DateTimeField(verbose_name='Data de retirada', null=True, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
 
+    class Meta:
+        verbose_name = 'Ordem de Serviço'
+        verbose_name_plural = 'Ordens de Serviço'
+        ordering = ['-shipping_date']
+        indexes = [
+            models.Index(fields=['created_by', 'shipping_date']),
+            models.Index(fields=['created_by', 'service_autorized']),
+            models.Index(fields=['created_by', 'withdrawal_date']),
+            models.Index(fields=['service_autorized', 'withdrawal_date']),
+        ]
+
     def __str__(self):
-        return f'{self.id}'
+        return f'OS #{self.id} - {self.client.name}'
 
 
 class Checklist(models.Model):
