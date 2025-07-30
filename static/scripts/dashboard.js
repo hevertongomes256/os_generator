@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (orderId && tipoRadio) {
             const tipo = tipoRadio.value;
             // Ajuste a URL conforme sua configuração de URLs do Django
-            window.location.href = `/orders/gerar_pdf/${orderId}/?tipo=${tipo}`;
+            window.location.href = `/orders/generate_pdf/${orderId}/?type=${tipo}`;
             
             if (pdfModal) {
                 pdfModal.hide();
