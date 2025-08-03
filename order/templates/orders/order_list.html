@@ -197,8 +197,8 @@
                                 <strong class="value-text">R$ {{ order.service_total|floatformat:2 }}</strong>
                             </td>
                             <td>
-                                <span class="status-badge {{ order.status_class }}">
-                                    {{ order.status_display }}
+                                <span class="status-badge {{ order.service_autorized }}">
+                                    {{ order.service_autorized|yesno:"✔️,❌" }}
                                 </span>
                             </td>
                             <td>

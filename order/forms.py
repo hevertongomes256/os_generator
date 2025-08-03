@@ -10,6 +10,9 @@ class OrderForm(forms.ModelForm):
         model = Order
         fields = ['client', 'device', 'defect', 'additional_info', 'additional_description', 'service_total',
                   'service_initial', 'missing_payment', 'service_autorized']
+        widgets = {
+            'service_autorized': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -32,6 +35,13 @@ class OrderEditForm(forms.ModelForm):
         model = Order
         fields = ['client', 'device', 'defect', 'additional_info', 'additional_description', 'service_total',
                   'service_initial', 'missing_payment', 'service_autorized', 'name_withdrawal', 'withdrawal_date']
+        widgets = {
+            'service_autorized': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'withdrawal_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+        }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)

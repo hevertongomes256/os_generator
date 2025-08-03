@@ -147,7 +147,7 @@ class OrderListView(LoginRequiredMixin, ListView):
             service_autorized=True, 
             withdrawal_date__isnull=True
         ).count()
-        
+
         return {
             'total_earned': total_earned,
             'total_pending': total_pending,
@@ -173,20 +173,20 @@ class OrderListView(LoginRequiredMixin, ListView):
             total_value=Sum('service_total'),
             completed_count=Count('id', filter=Q(withdrawal_date__isnull=False))
         ).order_by('month')
-        
+
         # Formatar dados para Chart.js
         months = []
         order_counts = []
         order_values = []
         completed_counts = []
-        
+
         for data in monthly_data:
             if data['month']:
                 months.append(data['month'].strftime('%b/%Y'))
                 order_counts.append(data['count'])
                 order_values.append(float(data['total_value'] or 0))
                 completed_counts.append(data['completed_count'])
- 
+
         return {
             'months': json.dumps(months),
             'order_counts': json.dumps(order_counts),
