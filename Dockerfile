@@ -11,5 +11,6 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
 
-# Use o gunicorn para produção
-CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+
