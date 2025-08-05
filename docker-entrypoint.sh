@@ -12,8 +12,8 @@ fi
 echo "Rodando migrações do Django..."
 python manage.py migrate
 
-echo "Criando superusuário Django (se necessário)..."
-python manage.py createsuperuser --noinput || true
+echo "Coletando arquivos estáticos..."
+python manage.py collectstatic --no-input
 
 echo "Iniciando aplicação..."
 exec gunicorn core.wsgi:application --bind 0.0.0.0:8000
