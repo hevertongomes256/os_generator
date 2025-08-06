@@ -10,7 +10,7 @@ class Order(models.Model):
     defect = models.CharField(verbose_name='Defeito', max_length=255)
     additional_info = models.TextField(verbose_name='Observações', null=True, blank=True)
     additional_info_exit = models.TextField(null=True, blank=True)
-    additional_description = models.TextField(verbose_name='Serviço Prestado')
+    additional_description = models.TextField(verbose_name='Serviço Prestado', null=True, blank=True)
     service_autorized = models.BooleanField(verbose_name='Serviço Autorizado', default=False)
     service_total = models.DecimalField(
         max_digits=10,
